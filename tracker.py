@@ -1,0 +1,66 @@
+from utils.vis_utils import *
+from optimization.objectTrackingSingleFrame import my_objectTracker
+from optimization.ext.mesh_loaders import load_mesh
+import os
+import yaml
+
+YCB_MODELS_DIR = '/mnt/8T/kangbo/ycb/models'
+HO3D_MULTI_CAMERA_DIR = '/mnt/8T/kangbo/'
+meta_filename = '/mnt/8T/kangbo/HO3d/evaluation/SM1/meta/0000.pkl'
+
+class camProps(object):
+    def __init__(self, ID, f, c, near, far, frameSize, pose):
+        self.ID = ID
+        self.f = f
+        self.c = c
+        self.near = near
+        self.far = far
+        self.frameSize = frameSize
+        self.pose = pose
+
+    def getCamMat(self):
+        camMat = np.array([[self.f[0], 0, self.c[0]],[0., self.f[1], self.c[1]],[0., 0., 1.]]).astype(np.float32)
+        return camMat
+
+
+def pred_func(img, anno):
+    h, w, _ = img.shape # assert img.shape == (640, 480, 3)
+
+    rot, trans = anno['objRot'], anno['objTrans']
+    objMesh = read_obj(os.path.join(YCB_MODELS_DIR, 'models', anno['objName'], 'textured_simple.obj'))
+
+
+
+def track():
+    anno = load_pickle_data(meta_filename)
+
+    configFile = os.path.join(HO3D_MULTI_CAMERA_DIR, 'test', 'configs/configObjPose.json')
+    with open(configFile) as config_file:
+        configData = yaml.safe_load(config_file)
+    base_dir = os.path.join(HO3D_MULTI_CAMERA_DIR, 'test')
+    out_dir = os.path.join(base_dir, 'dirt_obj_pose')
+
+    # create out dir
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
+
+    rot = anno['objRot']
+    trans = anno['objTrans']
+
+    modelPath = os.path.join(YCB_MODELS_DIR, anno['objName'], 'textured_simple.obj')
+    mesh = load_mesh(modelPath)
+
+    # ready the arguments
+    w, h = 480, 640
+    camMat = anno['camMat']
+    camProp = camProps(ID='cam1', f=np.array([camMat[0,0], camMat[1,1]], dtype=np.float32),
+                           c=np.array([camMat[0,2], camMat[1,2]], dtype=np.float32),
+                           near=0.001, far=2.0, frameSize=[w, h],
+                           pose=np.eye(4, dtype=np.float32))
+
+
+    my_objectTracker(w, h, rot, trans, camProp, mesh, out_dir, configData)
+
+
+if __name__ == '__main__':
+    track()
