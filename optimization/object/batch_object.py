@@ -1,6 +1,9 @@
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
-tf.logging.set_verbosity(tf.logging.ERROR)
+try:
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+    tf.logging.set_verbosity(tf.logging.ERROR)
+except:
+    import tensorflow as tf
 import numpy as np
 from ext.mesh_loaders import load_mesh
 import os
