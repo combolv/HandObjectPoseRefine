@@ -23,6 +23,19 @@ class camProps(object):
         return camMat
 
 
+import argparse
+parser = argparse.ArgumentParser()
+# FLAGS = flags.FLAGS
+#
+parser.add_argument('--ycb', default='/mnt/8T/kangbo/ycb/models', type=str)
+parser.add_argument('--ho3d', default='/mnt/8T/kangbo/', type=str)
+parser.add_argument('--pkl', action='store_true', help='Show object rendering, very slow!')
+# FLAGS = parser.parse_args()
+#
+# USE_PYTHON_RENDERER = FLAGS.doPyRender # for visualization, but slows down
+
+
+
 def pred_func(img, anno):
     h, w, _ = img.shape # assert img.shape == (640, 480, 3)
 
@@ -34,9 +47,9 @@ def pred_func(img, anno):
 def track():
     anno = load_pickle_data(meta_filename)
 
-    configFile = os.path.join(HO3D_MULTI_CAMERA_DIR, 'test', 'configs/configObjPose.json')
-    with open(configFile) as config_file:
-        configData = yaml.safe_load(config_file)
+    # configFile = os.path.join(HO3D_MULTI_CAMERA_DIR, 'test', 'configs/configObjPose.json')
+    # with open(configFile) as config_file:
+    #     configData = yaml.safe_load(config_file)
     base_dir = os.path.join(HO3D_MULTI_CAMERA_DIR, 'test')
     out_dir = os.path.join(base_dir, 'dirt_obj_pose')
 
@@ -59,7 +72,7 @@ def track():
                            pose=np.eye(4, dtype=np.float32))
 
 
-    my_objectTracker(w, h, rot, trans, camProp, mesh, out_dir, configData)
+    my_objectTracker(w, h, rot, trans, camProp, mesh, out_dir)
 
 
 if __name__ == '__main__':

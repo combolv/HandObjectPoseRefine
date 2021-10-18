@@ -43,7 +43,7 @@ from absl import app
 # USE_PYTHON_RENDERER = FLAGS.doPyRender # for visualization, but slows down
 
 
-def my_objectTracker(w, h, rot, trans, camProp, objMesh, out_dir, configData):
+def my_objectTracker(w, h, rot, trans, camProp, objMesh, out_dir):
     ds = tf.data.Dataset.from_generator(lambda: dataGen(w, h, datasetName),
                                         (tf.string, tf.float32, tf.float32, tf.float32, tf.float32),
                                         ((None,), (None, h, w, 3), (None, h, w, 3), (None, h, w, 3), (None, h, w, 3)))
