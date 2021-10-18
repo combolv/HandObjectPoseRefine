@@ -2,11 +2,11 @@ from utils.vis_utils import *
 from optimization.objectTrackingSingleFrame import my_objectTracker
 from optimization.ext.mesh_loaders import load_mesh
 import os
-import yaml
-
-YCB_MODELS_DIR = '/mnt/8T/kangbo/ycb/models'
-HO3D_MULTI_CAMERA_DIR = '/mnt/8T/kangbo/'
-meta_filename = '/mnt/8T/kangbo/HO3d/evaluation/SM1/meta/0000.pkl'
+# import yaml
+#
+# YCB_MODELS_DIR = '/mnt/8T/kangbo/ycb/models'
+# HO3D_MULTI_CAMERA_DIR = '/mnt/8T/kangbo/'
+# meta_filename = '/mnt/8T/kangbo/HO3d/evaluation/SM1/meta/0000.pkl'
 
 class camProps(object):
     def __init__(self, ID, f, c, near, far, frameSize, pose):
@@ -29,8 +29,11 @@ parser = argparse.ArgumentParser()
 #
 parser.add_argument('--ycb', default='/mnt/8T/kangbo/ycb/models', type=str)
 parser.add_argument('--ho3d', default='/mnt/8T/kangbo/', type=str)
-parser.add_argument('--pkl', action='store_true', help='Show object rendering, very slow!')
-# FLAGS = parser.parse_args()
+parser.add_argument('--pkl', default='/mnt/8T/kangbo/HO3d/evaluation/SM1/meta/0000.pkl', type=str)
+args = parser.parse_args()
+YCB_MODELS_DIR = args.ycb
+HO3D_MULTI_CAMERA_DIR = args.ho3d
+meta_filename = args.pkl
 #
 # USE_PYTHON_RENDERER = FLAGS.doPyRender # for visualization, but slows down
 
