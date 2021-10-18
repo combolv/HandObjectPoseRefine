@@ -74,7 +74,7 @@ def track():
                            near=0.001, far=2.0, frameSize=[w, h],
                            pose=np.eye(4, dtype=np.float32))
 
-
+    print(rot, trans)
     my_objectTracker(w, h, rot, trans, camProp, mesh, out_dir)
 
 
