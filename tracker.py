@@ -1,12 +1,9 @@
 from utils.vis_utils import *
 from optimization.objectTrackingSingleFrame import my_objectTracker
 from optimization.ext.mesh_loaders import load_mesh
+import cv2
 import os
-# import yaml
-#
-# YCB_MODELS_DIR = '/mnt/8T/kangbo/ycb/models'
-# HO3D_MULTI_CAMERA_DIR = '/mnt/8T/kangbo/'
-# meta_filename = '/mnt/8T/kangbo/HO3d/evaluation/SM1/meta/0000.pkl'
+
 
 class camProps(object):
     def __init__(self, ID, f, c, near, far, frameSize, pose):
@@ -30,6 +27,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--ycb', default='/mnt/8T/kangbo/ycb/models', type=str)
 parser.add_argument('--ho3d', default='/mnt/8T/kangbo/', type=str)
 parser.add_argument('--pkl', default='/mnt/8T/kangbo/HO3d/evaluation/SM1/meta/0000.pkl', type=str)
+parser.add_argument('--frameID', default=0, type=int)
+# parser.add_argument('--objDepth', default='seg.png', type=str)
+parser.add_argument('--handMask', default='seg.png', type=str)
+parser.add_argument('--depth-filename', default='/mnt/8T/kangbo/HO3d/evaluation/SM1/depth/0000.png', type=str)
+parser.add_argument('--img-filename', default='/mnt/8T/kangbo/HO3d/evaluation/SM1/rgb/0000.png', type=str)
+parser.add_argument('--objMask', default='seg.png', type=str)
+
 args = parser.parse_args()
 YCB_MODELS_DIR = args.ycb
 HO3D_MULTI_CAMERA_DIR = args.ho3d
@@ -74,8 +78,19 @@ def track():
                            near=0.001, far=2.0, frameSize=[w, h],
                            pose=np.eye(4, dtype=np.float32))
 
+    objImg = cv2.imread(args.img_filename)
+
+    depth_scale = 0.00012498664727900177
+    depth_img = cv2.imread(args.depth_filename)
+
+    dpt = depth_img[:, :, 2] + depth_img[:, :, 1] * 256
+    objDepth = dpt * depth_scale
+    objMask = cv2.imread(args.objMask)
+    handMask = cv2.imread(args.handMask)
+
     print(rot, trans)
-    my_objectTracker(w, h, rot, trans, camProp, mesh, out_dir)
+    my_objectTracker(w, h, rot, trans, camProp, mesh, out_dir,
+                     args.frameID, objMask, objDepth, objImg, handMask)
 
 
 if __name__ == '__main__':
