@@ -151,8 +151,8 @@ def my_objectTracker(w, h, rot, trans, camProp, objMesh, out_dir,
 
 
 def dataGen(frameID, objMask, objDepth, objImg, handMask):
-    return (tf.float32(frameID),
-            tf.float32(objMask),
-            tf.float32(objDepth),
-            tf.float32(objImg),
-            tf.float32(handMask))
+    return (tf.cast(frameID, dtype=tf.float32),
+            tf.cast(objMask, dtype=tf.float32),
+            tf.cast(objDepth, dtype=tf.float32),
+            tf.cast(objImg, dtype=tf.float32),
+            tf.cast(handMask, dtype=tf.float32))
