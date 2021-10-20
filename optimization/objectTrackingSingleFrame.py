@@ -116,42 +116,43 @@ def my_objectTracker(w, h, rot, trans, camProp, objMesh, out_dir,
     ax4 = fig.add_subplot(2, 2, 4)
     lMask = ax4.imshow(np.random.uniform(0,2,(240,320,3)))
 
+    session.run(resetOpt1)
+    session.run(resetOpt2)
 
+    # load new frame
+    opti1.runOptimization(session, 1, {loadData:True})
+    print(icpLoss.eval(feed_dict={loadData: False}))
+    print(segLoss.eval(feed_dict={loadData: False}))
+    print(depthLoss.eval(feed_dict={loadData: False}))
 
-    while(True):
-        session.run(resetOpt1)
-        session.run(resetOpt2)
+    # run the optimization for new frame
+    frameID = (realObservs.frameID.eval(feed_dict={loadData: False}))[0].decode('UTF-8')
+    # opti1.runOptimization(session, 200, {loadData: False})#, logLossFunc=True, lossPlotName=out_dir+'/LossFunc/'+frameID+'_1.png')
+    opti2.runOptimization(session, 25, {loadData: False})#, logLossFunc=True, lossPlotName='handLoss/'+frameID+'_2.png')
 
-        # load new frame
-        opti1.runOptimization(session, 1, {loadData:True})
-        print(icpLoss.eval(feed_dict={loadData: False}))
-        print(segLoss.eval(feed_dict={loadData: False}))
-        print(depthLoss.eval(feed_dict={loadData: False}))
+    plt.title(frameID)
+    depRen = virtObservs.depth.eval(feed_dict={loadData: False})[0]
+    depGT = realObservs.depth.eval(feed_dict={loadData: False})[0]
+    segRen = virtObservs.seg.eval(feed_dict={loadData: False})[0]
+    segGT = realObservs.seg.eval(feed_dict={loadData: False})[0]
 
-        # run the optimization for new frame
-        frameID = (realObservs.frameID.eval(feed_dict={loadData: False}))[0].decode('UTF-8')
-        # opti1.runOptimization(session, 200, {loadData: False})#, logLossFunc=True, lossPlotName=out_dir+'/LossFunc/'+frameID+'_1.png')
-        opti2.runOptimization(session, 25, {loadData: False})#, logLossFunc=True, lossPlotName='handLoss/'+frameID+'_2.png')
+    lGT.set_data(objImg.eval(feed_dict={loadData: False})[0]) # input image
+    # if USE_PYTHON_RENDERER:
+    #     lRen.set_data(cRend) # object rendered in the optimized pose
+    lDep.set_data(np.abs(depRen-depGT)[:,:,0]) # depth map error
+    lMask.set_data(np.abs(segRen-segGT)[:,:,:]) # mask error
+    plt.savefig(out_dir+'/'+frameID+'.png')
+    plt.waitforbuttonpress(0.01)
 
-        plt.title(frameID)
-        depRen = virtObservs.depth.eval(feed_dict={loadData: False})[0]
-        depGT = realObservs.depth.eval(feed_dict={loadData: False})[0]
-        segRen = virtObservs.seg.eval(feed_dict={loadData: False})[0]
-        segGT = realObservs.seg.eval(feed_dict={loadData: False})[0]
-
-        lGT.set_data(objImg.eval(feed_dict={loadData: False})[0]) # input image
-        # if USE_PYTHON_RENDERER:
-        #     lRen.set_data(cRend) # object rendered in the optimized pose
-        lDep.set_data(np.abs(depRen-depGT)[:,:,0]) # depth map error
-        lMask.set_data(np.abs(segRen-segGT)[:,:,:]) # mask error
-        plt.savefig(out_dir+'/'+frameID+'.png')
-        plt.waitforbuttonpress(0.01)
-
-        transNp = trans.eval(feed_dict={loadData: False})
-        rotNp = rot.eval(feed_dict={loadData: False})
-        savePickleData(out_dir+'/'+frameID+'.pkl', {'rot': rotNp, 'trans': transNp})
-        print(rotNp, transNp)
+    transNp = trans.eval(feed_dict={loadData: False})
+    rotNp = rot.eval(feed_dict={loadData: False})
+    savePickleData(out_dir+'/'+frameID+'.pkl', {'rot': rotNp, 'trans': transNp})
+    print(rotNp, transNp)
 
 
 def dataGen(frameID, objMask, objDepth, objImg, handMask):
-    return frameID, objMask, objDepth, objImg, handMask
+    return (tf.float32(frameID),
+            tf.float32(objMask),
+            tf.float32(objDepth),
+            tf.float32(objImg),
+            tf.float32(handMask))
